@@ -1,0 +1,7 @@
+[package]
+name = "rcalc"
+version = "0.1.0"
+authors = ["Andreas Grønlien <andreas@gronlien.no>"]
+
+[dependencies]
+regex = "0.2"
