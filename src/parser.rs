@@ -16,16 +16,16 @@ pub enum AstExpr {
     Literal(f64),
     Binary(AstOp, Box<AstExpr>, Box<AstExpr>),
     External(AstExFn, Vec<Box<AstExpr>>),
-    Unary(AstOp, Box<AstExpr>)
+    Unary(AstOp, Box<AstExpr>),
 }
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum AstOp {
-    Add,    // a + b
-    Sub,    // a - b
-    Mul,    // a * b
-    Div,    // a / b
-    Pow     // a ^ b
+    Add, // a + b
+    Sub, // a - b
+    Mul, // a * b
+    Div, // a / b
+    Pow, // a ^ b
 }
 
 impl FromStr for AstOp {
@@ -33,12 +33,12 @@ impl FromStr for AstOp {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "+"  => Ok(AstOp::Add),
-            "-"  => Ok(AstOp::Sub),
-            "*"  => Ok(AstOp::Mul),
-            "/"  => Ok(AstOp::Div),
-            "^"  => Ok(AstOp::Pow),
-            _    => Err(())
+            "+" => Ok(AstOp::Add),
+            "-" => Ok(AstOp::Sub),
+            "*" => Ok(AstOp::Mul),
+            "/" => Ok(AstOp::Div),
+            "^" => Ok(AstOp::Pow),
+            _ => Err(()),
         }
     }
 }
@@ -51,7 +51,7 @@ pub enum AstExFn {
     ACos,
     Tan,
     ATan,
-    ATan2
+    ATan2,
 }
 
 impl FromStr for AstExFn {
@@ -59,18 +59,17 @@ impl FromStr for AstExFn {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "sin"   => Ok(AstExFn::Sin),
-            "cos"   => Ok(AstExFn::Cos),
-            "asin"  => Ok(AstExFn::ASin),
-            "acos"  => Ok(AstExFn::ACos),
-            "tan"   => Ok(AstExFn::Tan),
-            "atan"  => Ok(AstExFn::ATan),
+            "sin" => Ok(AstExFn::Sin),
+            "cos" => Ok(AstExFn::Cos),
+            "asin" => Ok(AstExFn::ASin),
+            "acos" => Ok(AstExFn::ACos),
+            "tan" => Ok(AstExFn::Tan),
+            "atan" => Ok(AstExFn::ATan),
             "atan2" => Ok(AstExFn::ATan2),
-            _       => Err(())
+            _ => Err(()),
         }
     }
 }
-
 
 pub fn parse(mut tokens: Vec<Token>) -> AstExpr {
     tokens.reverse();
@@ -91,14 +90,12 @@ fn parse_add(tokens: &mut Vec<Token>) -> AstExpr {
     let mut node = parse_mul(tokens);
     while let Some(token) = tokens.pop() {
         node = match token {
-            Token::Operator(op) => {
-                match op.as_ref() {
-                    "+"  => AstExpr::Binary(AstOp::Add, Box::new(node), Box::new(parse_mul(tokens))),
-                    "-" => AstExpr::Binary(AstOp::Sub, Box::new(node), Box::new(parse_mul(tokens))),
-                    other => {
-                        tokens.push(Token::Operator(other.to_string()));
-                        break;
-                    }
+            Token::Operator(op) => match op.as_ref() {
+                "+" => AstExpr::Binary(AstOp::Add, Box::new(node), Box::new(parse_mul(tokens))),
+                "-" => AstExpr::Binary(AstOp::Sub, Box::new(node), Box::new(parse_mul(tokens))),
+                other => {
+                    tokens.push(Token::Operator(other.to_string()));
+                    break;
                 }
             },
             other => {
@@ -106,7 +103,7 @@ fn parse_add(tokens: &mut Vec<Token>) -> AstExpr {
                 break;
             }
         }
-    };
+    }
     node
 }
 
@@ -114,14 +111,12 @@ fn parse_mul(tokens: &mut Vec<Token>) -> AstExpr {
     let mut node = parse_pow(tokens);
     while let Some(token) = tokens.pop() {
         node = match token {
-            Token::Operator(op) => {
-                match op.as_ref() {
-                    "*" => AstExpr::Binary(AstOp::Mul, Box::new(node), Box::new(parse_pow(tokens))),
-                    "/" => AstExpr::Binary(AstOp::Div, Box::new(node), Box::new(parse_pow(tokens))),
-                    other => {
-                        tokens.push(Token::Operator(other.to_string()));
-                        break;
-                    }
+            Token::Operator(op) => match op.as_ref() {
+                "*" => AstExpr::Binary(AstOp::Mul, Box::new(node), Box::new(parse_pow(tokens))),
+                "/" => AstExpr::Binary(AstOp::Div, Box::new(node), Box::new(parse_pow(tokens))),
+                other => {
+                    tokens.push(Token::Operator(other.to_string()));
+                    break;
                 }
             },
             other => {
@@ -137,13 +132,11 @@ fn parse_pow(tokens: &mut Vec<Token>) -> AstExpr {
     let mut node = parse_unary(tokens);
     while let Some(token) = tokens.pop() {
         node = match token {
-            Token::Operator(op) => {
-                match op.as_ref() {
-                    "^" => AstExpr::Binary(AstOp::Pow, Box::new(node), Box::new(parse_unary(tokens))),
-                    other => {
-                        tokens.push(Token::Operator(other.to_string()));
-                        break;
-                    }
+            Token::Operator(op) => match op.as_ref() {
+                "^" => AstExpr::Binary(AstOp::Pow, Box::new(node), Box::new(parse_unary(tokens))),
+                other => {
+                    tokens.push(Token::Operator(other.to_string()));
+                    break;
                 }
             },
             other => {
@@ -157,13 +150,11 @@ fn parse_pow(tokens: &mut Vec<Token>) -> AstExpr {
 
 fn parse_unary(tokens: &mut Vec<Token>) -> AstExpr {
     match tokens.pop().expect("Expected unary token") {
-        Token::Operator(op) => {
-            match op.as_ref() {
-                "-" => AstExpr::Unary(AstOp::Sub, Box::new(parse_primary(tokens))),
-                "+" => parse_primary(tokens),
-                other => panic!("Unexpected token {:?}, should be - or +", other)
-            }
-        }
+        Token::Operator(op) => match op.as_ref() {
+            "-" => AstExpr::Unary(AstOp::Sub, Box::new(parse_primary(tokens))),
+            "+" => parse_primary(tokens),
+            other => panic!("Unexpected token {:?}, should be - or +", other),
+        },
         other => {
             tokens.push(other);
             parse_primary(tokens)
@@ -178,9 +169,9 @@ fn parse_primary(tokens: &mut Vec<Token>) -> AstExpr {
             let ast_node = parse_expr(tokens);
             match tokens.pop().expect("Expected token") {
                 Token::RightPar => ast_node,
-                _ => panic!("Expected )")
+                _ => panic!("Expected )"),
             }
-        },
+        }
         Token::External(name) => {
             let mut args = Vec::new();
             loop {
@@ -190,27 +181,23 @@ fn parse_primary(tokens: &mut Vec<Token>) -> AstExpr {
                     Token::RightPar => {
                         args.push(Box::new(ast_node));
                         break;
-                    },
-                    _ => panic!("Expected , or )")
+                    }
+                    _ => panic!("Expected , or )"),
                 }
             }
             AstExpr::External(
                 AstExFn::from_str(&name).expect("Unknown external function"),
-                args
+                args,
             )
-        },
-        other => panic!("Unexpected token {:?}", other)
+        }
+        other => panic!("Unexpected token {:?}", other),
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
-
 
     #[test]
     fn parse_external() {
@@ -230,22 +217,66 @@ mod tests {
 
     #[test]
     fn binary_expr() {
-        assert_eq!(parse(::scanner::tokenize("1 + 2".to_string())), AstExpr::Binary(AstOp::Add, Box::new(AstExpr::Literal(1.0)), Box::new(AstExpr::Literal(2.0))));
-        assert_eq!(parse(::scanner::tokenize("1 * 2".to_string())), AstExpr::Binary(AstOp::Mul, Box::new(AstExpr::Literal(1.0)), Box::new(AstExpr::Literal(2.0))));
-        assert_eq!(parse(::scanner::tokenize("1 / 2".to_string())), AstExpr::Binary(AstOp::Div, Box::new(AstExpr::Literal(1.0)), Box::new(AstExpr::Literal(2.0))));
-        assert_eq!(parse(::scanner::tokenize("1 - 2".to_string())), AstExpr::Binary(AstOp::Sub, Box::new(AstExpr::Literal(1.0)), Box::new(AstExpr::Literal(2.0))));
-        assert_eq!(parse(::scanner::tokenize("1 ^ 2".to_string())), AstExpr::Binary(AstOp::Pow, Box::new(AstExpr::Literal(1.0)), Box::new(AstExpr::Literal(2.0))));
+        assert_eq!(
+            parse(::scanner::tokenize("1 + 2".to_string())),
+            AstExpr::Binary(
+                AstOp::Add,
+                Box::new(AstExpr::Literal(1.0)),
+                Box::new(AstExpr::Literal(2.0))
+            )
+        );
+        assert_eq!(
+            parse(::scanner::tokenize("1 * 2".to_string())),
+            AstExpr::Binary(
+                AstOp::Mul,
+                Box::new(AstExpr::Literal(1.0)),
+                Box::new(AstExpr::Literal(2.0))
+            )
+        );
+        assert_eq!(
+            parse(::scanner::tokenize("1 / 2".to_string())),
+            AstExpr::Binary(
+                AstOp::Div,
+                Box::new(AstExpr::Literal(1.0)),
+                Box::new(AstExpr::Literal(2.0))
+            )
+        );
+        assert_eq!(
+            parse(::scanner::tokenize("1 - 2".to_string())),
+            AstExpr::Binary(
+                AstOp::Sub,
+                Box::new(AstExpr::Literal(1.0)),
+                Box::new(AstExpr::Literal(2.0))
+            )
+        );
+        assert_eq!(
+            parse(::scanner::tokenize("1 ^ 2".to_string())),
+            AstExpr::Binary(
+                AstOp::Pow,
+                Box::new(AstExpr::Literal(1.0)),
+                Box::new(AstExpr::Literal(2.0))
+            )
+        );
     }
 
     #[test]
     fn test_par() {
-        assert_eq!(parse(::scanner::tokenize("(1)".to_string())), AstExpr::Literal(1.0));
+        assert_eq!(
+            parse(::scanner::tokenize("(1)".to_string())),
+            AstExpr::Literal(1.0)
+        );
     }
 
     #[test]
     fn test_par2() {
-        assert_eq!(parse(::scanner::tokenize("(1) + (2)".to_string())), 
-        AstExpr::Binary(AstOp::Add, Box::new(AstExpr::Literal(1.0)), Box::new(AstExpr::Literal(2.0))));
+        assert_eq!(
+            parse(::scanner::tokenize("(1) + (2)".to_string())),
+            AstExpr::Binary(
+                AstOp::Add,
+                Box::new(AstExpr::Literal(1.0)),
+                Box::new(AstExpr::Literal(2.0))
+            )
+        );
     }
 
     #[test]
@@ -255,13 +286,11 @@ mod tests {
             AstExpr::Binary(
                 AstOp::Add,
                 Box::new(AstExpr::Literal(1.0)),
-                Box::new(
-                    AstExpr::Binary(
-                        AstOp::Mul,
-                        Box::new(AstExpr::Literal(2.0)),
-                        Box::new(AstExpr::Literal(3.0))
-                    )
-                )
+                Box::new(AstExpr::Binary(
+                    AstOp::Mul,
+                    Box::new(AstExpr::Literal(2.0)),
+                    Box::new(AstExpr::Literal(3.0))
+                ))
             )
         );
 
@@ -269,13 +298,11 @@ mod tests {
             parse(::scanner::tokenize("1 * 2 + 3".to_string())),
             AstExpr::Binary(
                 AstOp::Add,
-                Box::new(
-                    AstExpr::Binary(
-                        AstOp::Mul,
-                        Box::new(AstExpr::Literal(1.0)),
-                        Box::new(AstExpr::Literal(2.0))
-                    )
-                ),
+                Box::new(AstExpr::Binary(
+                    AstOp::Mul,
+                    Box::new(AstExpr::Literal(1.0)),
+                    Box::new(AstExpr::Literal(2.0))
+                )),
                 Box::new(AstExpr::Literal(3.0))
             )
         );
