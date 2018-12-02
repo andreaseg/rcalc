@@ -34,7 +34,8 @@ pub fn tokenize(input: &str) -> Vec<Token> {
         r"(?P<external>[[:alpha:]][[:alnum:]]*\()|",
         r"(?P<comma>,)|",
         r"(?P<operator>[\+|\-|\*|/|\^])"
-    )).unwrap();
+    ))
+    .unwrap();
 
     for cap in re.captures_iter(&input) {
         let token = if cap.name("number").is_some() {
